@@ -9,9 +9,8 @@ const errorMiddleware = (err, req, res , next) => {
         //Mongoose bad ObjectId
         if(err.name === 'CastError'){
             const message = 'Resource not found';
-
             error = new Error(message);
-            error.statusCode = 404;
+            error.statusCode = 400;
         }
 
         //Mongoose duplicate key
@@ -27,6 +26,8 @@ const errorMiddleware = (err, req, res , next) => {
             error = new Error(message.join(', '));
             error.statusCode = 400;
         }
+
+        return res.status(error.statusCode || 500).json({success : false , error : error.message || "Server Error"})
 
     } catch (error) {
         next(error)

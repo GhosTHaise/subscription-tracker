@@ -1,8 +1,8 @@
 import mongoose from "mongoose"
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
-import { JWT_EXPIRES_IN, JWT_SECRET } from "../config/env";
+import { JWT_EXPIRES_IN, JWT_SECRET } from "../config/env.js";
 
 export const signUp = async (req,res,next) => {
     //Implement sign up logic here.
@@ -13,6 +13,11 @@ export const signUp = async (req,res,next) => {
         // Logic to create user  
         const { name, email, password} = req.body;
 
+        if(!name || !email || !password){
+            const error = new Error('Please fill all the fields');
+            error.status = 400;
+            throw error;
+        }
         //check if a user  already exists
         const existingUser = await User.findOne({ email});
 
