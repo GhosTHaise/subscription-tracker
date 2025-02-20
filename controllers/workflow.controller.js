@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { createRequire } from 'module';
-import Subscription from '../models/subscription.model';
+import Subscription from '../models/subscription.model.js';
 const require = createRequire(import.meta.url);
 const { serve } = require('@upstash/workflow/express');
 
@@ -19,32 +19,32 @@ const triggerReminder = async(context, label) => {
 }
 
 export const sendReminders = serve(async (context) => {
-    const { subscriptionID } = context.requestPayload;
+    const { subscriptionId } = context.requestPayload;
 
-    const subscription  = await fetchSubscription(context, subscriptionID);
+    const subscription  = await fetchSubscription(context, subscriptionId);
 
     if(!subscription || subscription.status !== 'active') return;
 
     const renewalDate = dayjs(subscription.renewalDate); 
 
     if(renewalDate.isBefore(dayjs())) {
-        console.log(`Renewal date has passed for subscription ${subscription.id}. Stopping workflow`);
+        console.log(`Renewal date has passed for subscription ${subscription._id}. Stopping workflow`);
         return;
     }
 
     for(const daysBefore of REMINDERS) {
-        const neminderDate = renewalDate.subtract(daysBefore, 'day');
+        const reminderDate = renewalDate.subtract(daysBefore, 'day');
 
-        if(neminderDate.isAfter(dayjs())) {
-            await sleepUntilReminder(`Reminder ${daysBefore} days before`, neminderDate);
+        if(reminderDate.isAfter(dayjs())) {
+            await sleepUntilReminder(context,`Reminder ${daysBefore} days before`, reminderDate);
         }
 
         await triggerReminder(context, `Reminder ${daysBefore} days before`);
     }
 })
 
-const fetchSubscription = async (context, subscriptionID) => {
-    return await context.run('get subscrition', () => {
-        return Subscription.findById(subscriptionID).populate('user', 'name email')
+const fetchSubscription = async (context, subscriptionId) => {
+    return await context.run('get subscription', async() => {
+        return await Subscription.findById(subscriptionId).populate('user', 'name email')
     })
 }
