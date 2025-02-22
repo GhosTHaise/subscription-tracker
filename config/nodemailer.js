@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer'
-import { EMAIL_PASSWORD } from './env'
+import { EMAIL_PASSWORD } from './env.js'
 
 export const accountEmail = 'ghostrex2@gmail.com'
 
